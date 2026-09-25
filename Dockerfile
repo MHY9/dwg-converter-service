@@ -1,22 +1,22 @@
-FROM python:3.11-alpine
+FROM fedora:39
 
-# LibreDWG ve dwg2dxf aracını Alpine resmi deposundan tek adımda kur
-RUN apk add --no-cache \
+# Fedora resmi deposundan LibreDWG ve Python araçlarını yükle
+RUN dnf install -y \
     libredwg \
-    libredwg-tools
+    python3 \
+    python3-pip \
+    && dnf clean all
 
-# dwg2dxf aracının başarıyla kurulduğunu derleme esnasında doğrula
+# dwg2dxf aracının varlığını derleme anında doğrula
 RUN dwg2dxf --help > /dev/null
 
 WORKDIR /app
 
-# Python bağımlılıklarını kur
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 COPY . .
 
-# Render port ayarı
 ENV PORT=10000
 EXPOSE 10000
 
