@@ -13,7 +13,7 @@ def health():
 @app.post("/convert", response_class=PlainTextResponse)
 async def convert_dwg_to_dxf(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".dwg"):
-        raise HTTPException(status_code=400, detail="Sadece .dwg dosyaları kabul edilir.")
+        raise HTTPException(status_code=400, detail="Sadece .dwg dosyalari kabul edilir.")
     
     with tempfile.TemporaryDirectory() as tmpdir:
         input_dwg = os.path.join(tmpdir, "input.dwg")
@@ -22,7 +22,6 @@ async def convert_dwg_to_dxf(file: UploadFile = File(...)):
         with open(input_dwg, "wb") as f:
             f.write(await file.read())
         
-        # -o parametresini girdi dosyasından önce veriyoruz
         result = subprocess.run(
             ["dwg2dxf", "-y", "-v0", "-o", output_dxf, input_dwg],
             capture_output=True,
@@ -32,7 +31,7 @@ async def convert_dwg_to_dxf(file: UploadFile = File(...)):
         if not os.path.exists(output_dxf):
             raise HTTPException(
                 status_code=500, 
-                detail=f"Dönüştürme başarısız: {result.stderr or result.stdout}"
+                detail=f"Donusturme basarisiz: {result.stderr or result.stdout}"
             )
         
         with open(output_dxf, "r", encoding="utf-8", errors="ignore") as f:

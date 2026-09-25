@@ -1,19 +1,29 @@
-FROM fedora:39
+FROM python:3.11-slim-bookworm
 
-# Fedora resmi deposundan LibreDWG ve Python araçlarını yükle
-RUN dnf install -y \
-    libredwg \
-    python3 \
-    python3-pip \
-    && dnf clean all
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    wget \
+    ca-certificates \
+    xz-utils \
+    && rm -rf /var/lib/apt/lists/*
 
-# dwg2dxf aracının varlığını derleme anında doğrula
+WORKDIR /tmp
+RUN (wget -q https://ftp.gnu.org/gnu/libredwg/libredwg-0.12.5.tar.xz || \
+     wget -q https://github.com/LibreDWG/libredwg/releases/download/0.12.5/libredwg-0.12.5.tar.xz) \
+    && tar -xf libredwg-0.12.5.tar.xz \
+    && cd libredwg-0.12.5 \
+    && ./configure --disable-bindings \
+    && make -j$(nproc) \
+    && make install \
+    && ldconfig \
+    && cd / && rm -rf /tmp/libredwg*
+
 RUN dwg2dxf --help > /dev/null
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
