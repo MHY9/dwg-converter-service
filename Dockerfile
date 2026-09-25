@@ -1,16 +1,20 @@
-FROM debian:bookworm-slim
+FROM python:3.11-slim-bookworm
 
-RUN apt-get update && apt-get install -y \
+# Sistem paketlerini güncelle ve sadece libredwg-tools paketini kur
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libredwg-tools \
-    python3 \
-    python3-pip \
-    python3-fastapi \
-    python3-uvicorn \
-    python3-multipart \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY main.py .
 
-EXPOSE 8080
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Python bağımlılıklarını pip ile yükle
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Render varsayılan olarak PORT ortam değişkeni atar (varsayılan: 10000)
+ENV PORT=10000
+EXPOSE 10000
+
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
